@@ -74,7 +74,6 @@ class user
 
 class userWriter
 {
-
     function __construct()
     {
         $this->user     = $GLOBALS['config']['user'];
@@ -91,8 +90,8 @@ class userWriter
                 $user->setDescription($GLOBALS['config']['userInfo']);
                 $user->setIp($_SERVER['REMOTE_ADDR']);
                 $user->setUserAgent($_SERVER['HTTP_USER_AGENT']);
-                //$user->setAuth($this->setAuthorizations);
                 $_SESSION['userDatas'] = serialize($user);
+                $_SESSION['lastTime'] = microtime(TRUE);
                 return $user;
             }
             else {
@@ -103,10 +102,18 @@ class userWriter
         elseif(is_object(unserialize($_SESSION['userDatas']))) {
             $user     = unserialize($_SESSION['userDatas']);
             $lastHash = hash('sha256', $user->getIp() . $user->getUserAgent());;
-            //$currHash = hash('sha256', '10.10.10.10' . $_SERVER['HTTP_USER_AGENT']);
             $currHash = hash('sha256', $_SERVER['REMOTE_ADDR'] . $_SERVER['HTTP_USER_AGENT']);
             if ($lastHash === $currHash) {
-                return $user;
+                $currentTime = microtime(TRUE);
+                $breakTime = $currentTime - $_SESSION['lastTime'];
+                if ($breakTime < $GLOBALS['config']['sessionExpire']) {
+                    $_SESSION['lastTime'] = $currentTime;
+                    return $user;
+                }
+                else {
+                    unset($user);
+                    return FALSE;
+                }
             }
             else {
                 unset($user);
@@ -121,6 +128,7 @@ class userWriter
 
     public static function initSession()
     {
+        $_SESSION['startTime'] = microtime(TRUE);
         session_start();
     }
 
