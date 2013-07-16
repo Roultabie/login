@@ -74,15 +74,17 @@ class user
 
 class userWriter
 {
+    private static $hashMethod;
     private $user;
     private $password;
     private $salt;
 
     function __construct()
     {
-        $this->user     = $GLOBALS['config']['user'];
-        $this->password = $GLOBALS['config']['password'];
-        $this->salt     = $GLOBALS['config']['salt'];
+        $this->user       = $GLOBALS['config']['user'];
+        $this->password   = $GLOBALS['config']['password'];
+        $this->salt       = $GLOBALS['config']['salt'];
+        self::$hashMethod = 'sha1';
     }
     
     function loginCheck($login = "", $password = "") // pour utiliser une autre méthode (sql ...) faire hériter une nouvelle classe et redéfinir cette méthode
@@ -144,7 +146,7 @@ class userWriter
 
     public static function returnHash($password)
     {
-        $hash = sha1($this->salt . $password . strrev($this->salt));
+        $hash = hash(self::hashMethod, $this->salt . $password . strrev($this->salt));
         return $hash;
     }
 }
