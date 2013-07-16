@@ -87,7 +87,7 @@ class userWriter
         self::$hashMethod = 'sha1';
     }
     
-    function loginCheck($login = "", $password = "") // pour utiliser une autre méthode (sql ...) faire hériter une nouvelle classe et redéfinir cette méthode
+    public function loginCheck($login = "", $password = "") // pour utiliser une autre méthode (sql ...) faire hériter une nouvelle classe et redéfinir cette méthode
     {
         if (!empty($login) && !empty($password)) {
             if ($this->user === $login && $this->password === self::returnHash($password)) {
