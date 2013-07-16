@@ -74,6 +74,10 @@ class user
 
 class userWriter
 {
+    private $user;
+    private $password;
+    private $salt;
+
     function __construct()
     {
         $this->user     = $GLOBALS['config']['user'];
