@@ -76,13 +76,13 @@ class userWriter
 {
     private static $hashMethod;
     private $user;
-    private $password;
+    private $hash;
     private $salt;
 
     function __construct()
     {
         $this->user       = $GLOBALS['config']['user'];
-        $this->password   = $GLOBALS['config']['password'];
+        $this->hash       = $GLOBALS['config']['hash'];
         $this->salt       = $GLOBALS['config']['salt'];
         self::$hashMethod = 'sha1';
     }
@@ -90,7 +90,7 @@ class userWriter
     public function loginCheck($login = "", $password = "") // pour utiliser une autre méthode (sql ...) faire hériter une nouvelle classe et redéfinir cette méthode
     {
         if (!empty($login) && !empty($password)) {
-            if ($this->user === $login && $this->password === self::returnHash($password)) {
+            if ($this->user === $login && $this->hash === self::returnHash($password)) {
                 $user = new user();
                 $user->setUsername($GLOBALS['config']['user']);
                 $user->setMail($GLOBALS['config']['mail']);
