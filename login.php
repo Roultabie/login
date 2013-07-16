@@ -78,12 +78,13 @@ class userWriter
     {
         $this->user     = $GLOBALS['config']['user'];
         $this->password = $GLOBALS['config']['password'];
+        $this->salt     = $GLOBALS['config']['salt'];
     }
     
     function loginCheck($login = "", $password = "") // pour utiliser une autre méthode (sql ...) faire hériter une nouvelle classe et redéfinir cette méthode
     {
         if (!empty($login) && !empty($password)) {
-            if ($this->user === $login && $this->password === hash('sha256', $password)) {
+            if ($this->user === $login && $this->password === self::returnHash($password)) {
                 $user = new user();
                 $user->setUsername($GLOBALS['config']['user']);
                 $user->setMail($GLOBALS['config']['mail']);
@@ -135,6 +136,12 @@ class userWriter
     public static function killSession()
     {
         session_destroy();
+    }
+
+    public static function returnHash($password)
+    {
+        $hash = sha1($this->salt . $password . strrev($this->salt));
+        return $hash;
     }
 }
 
