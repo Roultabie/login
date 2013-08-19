@@ -4,7 +4,7 @@
 
 ##How to use :
 
-Download login and login form in your script dir, create a global config user and password (like $config['user'] $config['password'] - pass in sha256 - and include login.php in your page(s).  
+Download login and login form in your script dir, create a global config user and password (like $config['user'] $config['password'] - pass in sha1 - and include login.php in your page(s).  
 That's all !
 
 ##Licence :
