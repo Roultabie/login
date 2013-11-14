@@ -75,15 +75,15 @@ class user
 class userWriter
 {
     private static $hashMethod;
+    private static $salt;
     private $user;
     private $hash;
-    private $salt;
 
     function __construct()
     {
         $this->user       = $GLOBALS['config']['user'];
         $this->hash       = $GLOBALS['config']['hash'];
-        $this->salt       = $GLOBALS['config']['salt'];
+        self::$salt       = $GLOBALS['config']['salt'];
         self::$hashMethod = 'sha1';
     }
     
@@ -146,7 +146,7 @@ class userWriter
 
     public static function returnHash($password)
     {
-        $hash = hash(self::hashMethod, $this->salt . $password . strrev($this->salt));
+        $hash = hash(self::hashMethod, self::$salt . $password . strrev(self::$salt));
         return $hash;
     }
 }
