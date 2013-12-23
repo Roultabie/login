@@ -146,7 +146,7 @@ class userWriter
 
     public static function returnHash($password)
     {
-        $hash = hash(self::hashMethod, self::$salt . $password . strrev(self::$salt));
+        $hash = hash(self::$hashMethod, self::$salt . $password . strrev(self::$salt));
         return $hash;
     }
 }
