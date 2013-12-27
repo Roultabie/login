@@ -31,26 +31,6 @@ class user
         $this->username = $username;
     }
 
-    function getMail()
-    {
-        return $this->mail;
-    }
-
-    function setMail($mail)
-    {
-        $this->mail = $mail;
-    }
-
-    function getDescription()
-    {
-        return $this->description;
-    }
-
-    function setDescription($description)
-    {
-        $this->description = $description;
-    }
-
     function getIp()
     {
         return $this->ip;
@@ -70,8 +50,28 @@ class user
     {
         $this->userAgent = $userAgent;
     }
+
+    function getConfig()
+    {
+        return $this->config;
+    }
+
+    function setConfig($config)
+    {
+        if (is_array($config)) {
+            foreach ($config as $key => $value) {
+                if ($key !== 'hash' && $key !== 'salt') {
+                    $this->config[$key] = $value;
+                }
+            }
+        }
+    }
 }
 
+
+/**
+ * $config['users'] format : $users['username'] = array('hash' => 'hash', 'salt' => 'salt', 'mail' => 'mail', 'description' => 'description', etc ...);
+ */
 class userWriter
 {
     private static $hashMethod;
@@ -81,29 +81,29 @@ class userWriter
 
     function __construct()
     {
-        $this->user       = $GLOBALS['config']['user'];
-        $this->hash       = $GLOBALS['config']['hash'];
-        self::$salt       = $GLOBALS['config']['salt'];
-        self::$hashMethod = 'sha1';
+        $this->users      = $GLOBALS['config']['users'];
+        $this->hashMethod = 'sha1';
     }
-    
+
     public function loginCheck($login = "", $password = "") // pour utiliser une autre méthode (sql ...) faire hériter une nouvelle classe et redéfinir cette méthode
     {
         if (!empty($login) && !empty($password)) {
-            if ($this->user === $login && $this->hash === self::returnHash($password)) {
-                $user = new user();
-                $user->setUsername($GLOBALS['config']['user']);
-                $user->setMail($GLOBALS['config']['mail']);
-                $user->setDescription($GLOBALS['config']['userInfo']);
-                $user->setIp($_SERVER['REMOTE_ADDR']);
-                $user->setUserAgent($_SERVER['HTTP_USER_AGENT']);
-                $_SESSION['userDatas'] = serialize($user);
-                $_SESSION['lastTime']  = microtime(TRUE);
-                return $user;
-            }
-            else {
-                unset($user); // On ne sait jamais ;)
-                return FALSE;
+            if (array_key_exists($login, $this->users)) {
+                $user = $this->users[$login];
+                if ($user['hash'] === self::returnHash($password, $user['salt'], $this->hashMethod)) {
+                    $user = new user();
+                    $user->setUsername($login);
+                    $user->setIp($_SERVER['REMOTE_ADDR']);
+                    $user->setUserAgent($_SERVER['HTTP_USER_AGENT']);
+                    $user->setConfig($user);
+                    $_SESSION['userDatas'] = serialize($user);
+                    $_SESSION['lastTime']  = microtime(TRUE);
+                    return $user;
+                }
+                else {
+                    unset($user); // On ne sait jamais ;)
+                    return FALSE;
+                }
             }
         }
         elseif(is_object(unserialize($_SESSION['userDatas']))) {
@@ -144,9 +144,19 @@ class userWriter
         session_destroy();
     }
 
-    public static function returnHash($password)
+    public static generateUser($username, $password, $hashMethod)
     {
-        $hash = hash(self::$hashMethod, self::$salt . $password . strrev(self::$salt));
+        if (is_string($username)) {
+            $salt            = sha1(uniqid('',true) . mt_rand() . base64_encode(mt_rand()));
+            $hash            = self::returnHash($password, $salt, $hashMethod);
+            $user[$username] = array('hash' => $hash, 'salt' => $salt);
+        }
+        return $user;
+    }
+
+    private static function returnHash($password, $salt, $hashMethod)
+    {
+        $hash = hash($hashMethod, $salt . $password . strrev($salt));
         return $hash;
     }
 }
