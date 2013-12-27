@@ -15,10 +15,10 @@ class user
     function __construct()
     {
         $this->setUsername('');
-        $this->setMail('');
-        $this->setDescription('');
+        $this->setLevel('');
         $this->setIp('');
         $this->setUserAgent('');
+        $this->setConfig(array());
     }
 
     function getUsername()
@@ -29,6 +29,16 @@ class user
     function setUsername($username)
     {
         $this->username = $username;
+    }
+
+    function getLevel()
+    {
+        return $this->level;
+    }
+
+    function setLevel($level)
+    {
+        $this->level = $level;
     }
 
     function getIp()
@@ -60,7 +70,7 @@ class user
     {
         if (is_array($config)) {
             foreach ($config as $key => $value) {
-                if ($key !== 'hash' && $key !== 'salt') {
+                if ($key !== 'hash' && $key !== 'salt' && $key !== 'level') {
                     $this->config[$key] = $value;
                 }
             }
@@ -70,14 +80,13 @@ class user
 
 
 /**
- * $config['users'] format : $users['username'] = array('hash' => 'hash', 'salt' => 'salt', 'mail' => 'mail', 'description' => 'description', etc ...);
+ * $config['users'] format : $users['username'] = array('hash' => 'hash', 'salt' => 'salt', 'level' => 'level', 'mail' => 'mail', 'description' => 'description', etc ...);
  */
 class userWriter
 {
-    private static $hashMethod;
-    private static $salt;
-    private $user;
+    private $users;
     private $hash;
+    private $hashMethod;
 
     function __construct()
     {
@@ -89,13 +98,14 @@ class userWriter
     {
         if (!empty($login) && !empty($password)) {
             if (array_key_exists($login, $this->users)) {
-                $user = $this->users[$login];
-                if ($user['hash'] === self::returnHash($password, $user['salt'], $this->hashMethod)) {
+                $elements = $this->users[$login];
+                if ($elements['hash'] === self::returnHash($password, $elements['salt'], $this->hashMethod)) {
                     $user = new user();
                     $user->setUsername($login);
+                    $user->setLevel($elements['level']);
                     $user->setIp($_SERVER['REMOTE_ADDR']);
                     $user->setUserAgent($_SERVER['HTTP_USER_AGENT']);
-                    $user->setConfig($user);
+                    $user->setConfig($elements);
                     $_SESSION['userDatas'] = serialize($user);
                     $_SESSION['lastTime']  = microtime(TRUE);
                     return $user;
@@ -144,14 +154,14 @@ class userWriter
         session_destroy();
     }
 
-    public static generateUser($username, $password, $hashMethod)
+    public static function generateUser($username, $password, $hashMethod)
     {
         if (is_string($username)) {
             $salt            = sha1(uniqid('',true) . mt_rand() . base64_encode(mt_rand()));
             $hash            = self::returnHash($password, $salt, $hashMethod);
             $user[$username] = array('hash' => $hash, 'salt' => $salt);
         }
-        return $user;
+        return var_export($user);
     }
 
     private static function returnHash($password, $salt, $hashMethod)
