@@ -7,10 +7,9 @@ class user
 {
 
     private $username;
-    private $mail;
-    private $description;
     private $ip;
     private $userAgent;
+    private $config;
 
     function __construct()
     {
@@ -108,7 +107,8 @@ class userWriter
                     $user->setConfig($elements);
                     $_SESSION['userDatas'] = serialize($user);
                     $_SESSION['lastTime']  = microtime(TRUE);
-                    return $user;
+                    return array('user' => $user,
+                                 'justLogged' => TRUE);
                 }
                 else {
                     unset($user); // On ne sait jamais ;)
@@ -125,7 +125,9 @@ class userWriter
                 $breakTime   = $currentTime - $_SESSION['lastTime'];
                 if ($breakTime < $GLOBALS['config']['sessionExpire']) {
                     $_SESSION['lastTime'] = $currentTime;
-                    return $user;
+                    $this->justLogged     = false;
+                    return array('user' => $user,
+                                 'justLogged' => FALSE);
                 }
                 else {
                     unset($user);
@@ -181,11 +183,16 @@ if (!empty($_POST['login']) && !empty($_POST['pass'])) {
 
 $user = $session->loginCheck($user, $pass);
 
-if (!is_object($user) || $_POST['disconnect'] === '1' || $_GET['disconnect'] === '1') {
+if (!is_object($user['user']) || $_POST['disconnect'] === '1' || $_GET['disconnect'] === '1') {
     if ($_GET['disconnect'] === '1') $loginAction = 'action="' . $_SERVER['SCRIPT_NAME'] . '"';
     userWriter::killSession();
     require 'loginform.php';
     exit();
 }
-
+else {
+    if ($user['justLogged']) {
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit();
+    }
+}
 ?>
