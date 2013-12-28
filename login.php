@@ -96,23 +96,25 @@ class userWriter
     public function loginCheck($login = "", $password = "") // pour utiliser une autre méthode (sql ...) faire hériter une nouvelle classe et redéfinir cette méthode
     {
         if (!empty($login) && !empty($password)) {
-            if (array_key_exists($login, $this->users)) {
-                $elements = $this->users[$login];
-                if ($elements['hash'] === self::returnHash($password, $elements['salt'], $this->hashMethod)) {
-                    $user = new user();
-                    $user->setUsername($login);
-                    $user->setLevel($elements['level']);
-                    $user->setIp($_SERVER['REMOTE_ADDR']);
-                    $user->setUserAgent($_SERVER['HTTP_USER_AGENT']);
-                    $user->setConfig($elements);
-                    $_SESSION['userDatas'] = serialize($user);
-                    $_SESSION['lastTime']  = microtime(TRUE);
-                    return array('user' => $user,
-                                 'justLogged' => TRUE);
-                }
-                else {
-                    unset($user); // On ne sait jamais ;)
-                    return FALSE;
+            if (is_array($this->users)) {
+                if (array_key_exists($login, $this->users)) {
+                    $elements = $this->users[$login];
+                    if ($elements['hash'] === self::returnHash($password, $elements['salt'], $this->hashMethod)) {
+                        $user = new user();
+                        $user->setUsername($login);
+                        $user->setLevel($elements['level']);
+                        $user->setIp($_SERVER['REMOTE_ADDR']);
+                        $user->setUserAgent($_SERVER['HTTP_USER_AGENT']);
+                        $user->setConfig($elements);
+                        $_SESSION['userDatas'] = serialize($user);
+                        $_SESSION['lastTime']  = microtime(TRUE);
+                        return array('user' => $user,
+                                     'justLogged' => TRUE);
+                    }
+                    else {
+                        unset($user); // On ne sait jamais ;)
+                        return FALSE;
+                    }
                 }
             }
         }
