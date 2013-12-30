@@ -1,6 +1,9 @@
+<!doctype html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style type="text/css">
     body {
         margin-top: 5%;
