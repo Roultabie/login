@@ -86,11 +86,32 @@ class userWriter
     private $users;
     private $hash;
     private $hashMethod;
+    private static $statusCodes;
+    private static $status;
 
     function __construct()
     {
-        $this->users      = $GLOBALS['config']['users'];
-        $this->hashMethod = 'sha1';
+        $this->users         = $GLOBALS['config']['users'];
+        $this->hashMethod    = 'sha1';
+        $this->sessionExpire = $GLOBALS['config']['sessionExpire'];
+        self::$statusCodes   = array(1  => 'users-not-initialized',
+                                     2  => 'user-password-false',
+                                     3  => 'sessionExpire-not-initialized',
+                                     4  => 'user-password-false',
+                                     5  => 'user-password-false',
+                                     6  => 'session-expired',
+                                     51 => 'login-successful',
+                                     52 => 'user-control-successful');
+        // self::$statusCodes   = array(0  => 'general-error',
+        //                              1  => 'users-not-initialized',
+        //                              2  => 'user-not-found',
+        //                              3  => 'sessionExpire-not-initialized',
+        //                              4  => 'password-false',
+        //                              5  => 'session-usurped',
+        //                              6  => 'session-expired',
+        //                              50 => 'login-started',
+        //                              51 => 'login-successful',
+        //                              52 => 'user-control-successful');
     }
 
     public function loginCheck($login = "", $password = "") // pour utiliser une autre méthode (sql ...) faire hériter une nouvelle classe et redéfinir cette méthode
@@ -98,24 +119,38 @@ class userWriter
         if (!empty($login) && !empty($password)) {
             if (is_array($this->users)) {
                 if (array_key_exists($login, $this->users)) {
-                    $elements = $this->users[$login];
-                    if ($elements['hash'] === self::returnHash($password, $elements['salt'], $this->hashMethod)) {
-                        $user = new user();
-                        $user->setUsername($login);
-                        $user->setLevel($elements['level']);
-                        $user->setIp($_SERVER['REMOTE_ADDR']);
-                        $user->setUserAgent($_SERVER['HTTP_USER_AGENT']);
-                        $user->setConfig($elements);
-                        $_SESSION['userDatas'] = serialize($user);
-                        $_SESSION['lastTime']  = microtime(TRUE);
-                        return array('user' => $user,
-                                     'justLogged' => TRUE);
+                    if (is_int($this->sessionExpire)) {
+                        $elements = $this->users[$login];
+                        if ($elements['hash'] === self::returnHash($password, $elements['salt'], $this->hashMethod)) {
+                            $user = new user();
+                            $user->setUsername($login);
+                            $user->setLevel($elements['level']);
+                            $user->setIp($_SERVER['REMOTE_ADDR']);
+                            $user->setUserAgent($_SERVER['HTTP_USER_AGENT']);
+                            $user->setConfig($elements);
+                            $_SESSION['userDatas'] = serialize($user);
+                            $_SESSION['lastTime']  = microtime(TRUE);
+                            self::setStatus(51);
+                            return $user;
+                        }
+                        else {
+                            self::setStatus(4);
+                            return false;
+                        }
                     }
                     else {
-                        unset($user); // On ne sait jamais ;)
-                        return FALSE;
+                        self::setStatus(3);
+                        return false;
                     }
                 }
+                else {
+                    self::setStatus(2);
+                    return false;
+                }
+            }
+            else {
+                self::setStatus(1);
+                return false;
             }
         }
         elseif(is_object(unserialize($_SESSION['userDatas']))) {
@@ -128,22 +163,24 @@ class userWriter
                 if ($breakTime < $GLOBALS['config']['sessionExpire']) {
                     $_SESSION['lastTime'] = $currentTime;
                     $this->justLogged     = false;
-                    return array('user' => $user,
-                                 'justLogged' => FALSE);
+                    self::setStatus(52);
+                    return $user;
                 }
                 else {
                     unset($user);
-                    return FALSE;
+                    self::setStatus(6);
+                    return false;
                 }
             }
             else {
                 unset($user);
-                return FALSE;
+                self::setStatus(5);
+                return false;
             }
         }
         else {
-            unset($user);
-            return FALSE;
+            self::setStatus(50);
+            return false;
         }
     }
 
@@ -155,6 +192,12 @@ class userWriter
 
     public static function killSession()
     {
+        session_destroy();
+    }
+
+    public static function disconnect()
+    {
+        self::setStatus(52);
         session_destroy();
     }
 
@@ -173,11 +216,25 @@ class userWriter
         $hash = hash($hashMethod, $salt . $password . strrev($salt));
         return $hash;
     }
+
+    public static function getStatus()
+    {
+        return self::$status;
+    }
+
+    private static function setStatus($int)
+    {
+        if (array_key_exists($int, self::$statusCodes)) {
+            self::$status = array('code' => $int, 'message' => self::$statusCodes[$int]);
+        }
+        else {
+            self::$status = false;
+        }
+    }
 }
 
 userWriter::initSession();
 $session = new userWriter();
-
 if (!empty($_POST['login']) && !empty($_POST['pass'])) {
     $user = $_POST['login'];
     $pass = $_POST['pass'];
@@ -185,14 +242,24 @@ if (!empty($_POST['login']) && !empty($_POST['pass'])) {
 
 $user = $session->loginCheck($user, $pass);
 
-if (!is_object($user['user']) || $_POST['disconnect'] === '1' || $_GET['disconnect'] === '1') {
-    if ($_GET['disconnect'] === '1') $loginAction = 'action="' . $_SERVER['SCRIPT_NAME'] . '"';
+if (!is_object($user)) {
+    $status = userWriter::getStatus();
     userWriter::killSession();
+    $statusClass   = ($status['code'] < 50) ? "error" : "success";
+    $statusMessage = $status['message'];
     require 'loginform.php';
     exit();
 }
 else {
-    if ($user['justLogged']) {
+    if (isset($_POST['disconnect']) || isset($_GET['disconnect'])) {
+        $url = preg_replace('/(.*)(?|&)disconnect={0,1}[^&]+?(&)(.*)/i', '$1$2$4', $_SERVER['PHP_SELF'] . '&'); 
+        $url = substr($url, 0, -1);
+        userWriter::disconnect();
+        header('Location: ' . $url);
+        exit();
+    }
+    $status = userWriter::getStatus();
+    if ($status['code'] === 51) {
         header('Location: ' . $_SERVER['PHP_SELF']);
         exit();
     }

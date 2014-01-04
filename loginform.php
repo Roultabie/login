@@ -55,17 +55,28 @@
     input[type=submit]:hover, input[type=submit]:focus {
         box-shadow: 0px 0px 5px green;
     }
-    span {
+    .error, .success {
+        display: inline-block;
+        width: 100%;
+        text-align: center;
+    }
+    .error {
+        color: red;
+    }
+    .success {
+        color: green;
+    }
+    #credits {
         display: inline-block;
         width: 100%;
         text-align: center;
         margin-top: 2%;
         font-size: 0.8em;
     }
-    span a, span a:visited {
+    #credits a, #credits a:visited {
         color: #555;
     }
-    span a:hover, span a:focus{
+    #credits a:hover, #credits a:focus{
         color: #222;
     }
     </style>
@@ -78,6 +89,7 @@
             <input type="submit" value="login">
         </form>
     </div>
-    <span><a href="https://github.com/Roultabie/login" target="_blank">Login on GitHub</a></span>
+    <span class="<?php echo $statusClass ?>"><?php echo $statusMessage ?></span>
+    <span id="credits"><a href="https://github.com/Roultabie/login" target="_blank">Login on GitHub</a></span>
 </body>
 </html>
