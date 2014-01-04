@@ -187,7 +187,7 @@ class userWriter
     public static function initSession()
     {
         session_start();
-        $_SESSION['startTime'] = microtime(TRUE);
+        $_SESSION['startTime'] = microtime(true);
     }
 
     public static function killSession()
