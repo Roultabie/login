@@ -12,7 +12,12 @@ Use userWriter::generateUser() to generate your user:
 **print_r(userWriter::generateUser('john', 'doe', 'sha1'));**  
 And copy this informations in your config file.  
 **SHA1 is the default hash method, make sure that you use the same method in userWriter __construc()**. 
- 
+
+Add sessionExpire time (in seconds) :  
+**$GLOBALS['config']['sessionExpire'] = 1800;
+
+Login... 
+
 That's all !
 
 ##Licence :
