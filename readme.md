@@ -14,7 +14,7 @@ And copy this informations in your config file.
 **SHA1 is the default hash method, make sure that you use the same method in userWriter __construc()**. 
 
 Add sessionExpire time (in seconds) :  
-**$GLOBALS['config']['sessionExpire'] = 1800;
+**$GLOBALS['config']['sessionExpire'] = 1800;**
 
 Login... 
 
