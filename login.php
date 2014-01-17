@@ -121,7 +121,7 @@ class userWriter
                 if (array_key_exists($login, $this->users)) {
                     if (is_int($this->sessionExpire)) {
                         $elements = $this->users[$login];
-                        if ($elements['hash'] === self::returnHash($password, $elements['salt'], $this->hashMethod)) {
+                        if (password_verify($password, $elements['hash'])) {
                             $user = new user();
                             $user->setUsername($login);
                             $user->setLevel($elements['level']);
@@ -211,10 +211,15 @@ class userWriter
         return var_export($user);
     }
 
-    private static function returnHash($password, $salt, $hashMethod)
+    public static function returnHash($password, $method = '', $cost = '')
     {
-        $hash = hash($hashMethod, $salt . $password . strrev($salt));
-        return $hash;
+        if (empty($method)) {
+            $method = 'PASSWORD_BCRYPT';
+        }
+        if (!is_int($cost)) {
+            $cost = array('cost' => 10);
+        }
+        return password_hash($password, constant($method), $cost);
     }
 
     public static function getStatus()
