@@ -201,16 +201,6 @@ class userWriter
         session_destroy();
     }
 
-    public static function generateUser($username, $password, $hashMethod)
-    {
-        if (is_string($username)) {
-            $salt            = sha1(uniqid('',true) . mt_rand() . base64_encode(mt_rand()));
-            $hash            = self::returnHash($password, $salt, $hashMethod);
-            $user[$username] = array('hash' => $hash, 'salt' => $salt);
-        }
-        return var_export($user);
-    }
-
     public static function returnHash($password, $method = '', $cost = '')
     {
         if (empty($method)) {
