@@ -84,15 +84,12 @@ class user
 class userWriter
 {
     private $users;
-    private $hash;
-    private $hashMethod;
     private static $statusCodes;
     private static $status;
 
     function __construct()
     {
         $this->users         = $GLOBALS['config']['users'];
-        $this->hashMethod    = 'sha1';
         $this->sessionExpire = $GLOBALS['config']['sessionExpire'];
         self::$statusCodes   = array(1  => 'users-not-initialized',
                                      2  => 'user-password-false',
