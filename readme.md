@@ -5,13 +5,13 @@
 ##How to use :
 
 Download login and login form in your script dir, create a global config users like this :  
-**$GLOBALS['config']['users']['john'] = array('hash' => '0e8aebd2ad0b1bd2cb49eeede3a56a9b42fe0a93', 'salt' => '34ebcf4e7f7b36523a1459cc6a67fd62f1ebc22f');**  
+**$GLOBALS['config']['users']['john'] = array('hash' => '$2y$10$bF10DtUBK5U0VMOna.QRZODLxjG9H23fMrwfSFwyieDg.MZg10Lnm',);**  
 _Username john, password doe_
 
 Use userWriter::generateUser() to generate your user:  
-**print_r(userWriter::generateUser('john', 'doe', 'sha1'));**  
+**echo userWriter::returnHash('doe');**  
 And copy this informations in your config file.  
-**SHA1 is the default hash method, make sure that you use the same method in userWriter __construc()**. 
+**BCRYPT is the default hash method**. 
 
 Add sessionExpire time (in seconds) :  
 **$GLOBALS['config']['sessionExpire'] = 1800;**
