@@ -1,3 +1,5 @@
+<?php
+$html = <<<EOT
 <!doctype html>
 <html>
 <head>
@@ -83,13 +85,16 @@
 </head>
 <body>
     <div>
-        <form name="login" method="post" <?php echo $GLOBALS['loginAction'] ?>>
+        <form name="login" method="post" {$GLOBALS['loginAction']}>
             <input type="text" name="login" placeholder="Username"><br>
             <input type="password" name="pass" placeholder="Password"><br>
             <input type="submit" value="login">
         </form>
     </div>
-    <span class="<?php echo $statusClass ?>"><?php echo $statusMessage ?></span>
+    <span class="{$statusClass}">{$statusMessage}</span>
     <span id="credits"><a href="https://github.com/Roultabie/login" target="_blank">Login on GitHub</a></span>
 </body>
 </html>
+EOT;
+return $html;
+?>

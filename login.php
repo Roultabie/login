@@ -239,7 +239,8 @@ if (!is_object($user)) {
     userWriter::killSession();
     $statusClass   = ($status['code'] < 50) ? "error" : "success";
     $statusMessage = $status['message'];
-    require 'loginform.php';
+    $response      = (empty($_POST['CLI'])) ? require 'loginform.php' : $cli;
+    echo $response;
     exit();
 }
 else {
