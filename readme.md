@@ -8,7 +8,7 @@ Download login and login form in your script dir, create a global config users l
 **$GLOBALS['config']['users']['john'] = array('hash' => '$2y$10$bF10DtUBK5U0VMOna.QRZODLxjG9H23fMrwfSFwyieDg.MZg10Lnm',);**  
 _Username john, password doe_
 
-Use userWriter::generateUser() to generate your user:  
+Use userWriter::returnHash() to generate your user:  
 **echo userWriter::returnHash('doe');**  
 And copy this informations in your config file.  
 **BCRYPT is the default hash method**. 
