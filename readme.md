@@ -29,7 +29,7 @@ Add your users in htpasswd file with htpasswd cli :
 Define this constants :
 **define('LOGIN_METHOD', 'http-basic');**  
 **define('STORAGE_METHOD', 'apacheFileBasic');**  
-**define('STORAGE_OPTIONS', 'users');**
+**define('STORAGE_OPTIONS', 'myfile');**
 
 And call login.php  
 
