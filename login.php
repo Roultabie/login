@@ -89,8 +89,8 @@ class userWriter
 
     function __construct($method = '', $options = '')
     {
-        $method = $method . 'authentication';
-        (function_exists($method)) ? $this->$method($options) : $this->defaultAuthentication($options);
+        $method = $method . 'Authentication';
+        (method_exists($this, $method)) ? $this->$method($options) : $this->defaultAuthentication($options);
         $this->sessionExpire = (is_int($this->sessionExpire)) ? $this->sessionExpire : 1800; 
         self::$statusCodes   = array(1  => 'users-not-initialized',
                                      2  => 'user-password-false',
@@ -234,10 +234,27 @@ class userWriter
         $this->users         = $GLOBALS['config']['users'];
         $this->sessionExpire = $GLOBALS['config']['sessionExpire'];
     }
+
+    private function apacheFileBasicAuthentication($file)
+    {
+        if (file_exists($file)) {
+            $lines = file($file);
+        }
+        if (is_array($lines)) {
+            foreach ($lines as $user) {
+                $infos               = explode(':', $user);
+                $username = trim($infos[0]);
+                //$password = rtrim(trim($infos[1]), '/');
+                $password = trim($infos[1]);
+                $users[$username]     = array('hash' => $password);
+            }
+        }
+        $this->users = $users;
+    }
 }
 
 userWriter::initSession();
-$session = new userWriter(STORAGE_METHOD);
+$session = new userWriter(STORAGE_METHOD, STORAGE_OPTIONS);
 if (!empty($_SERVER['PHP_AUTH_USER']) && !empty($_SERVER['PHP_AUTH_PW'])) {
     $user     = $_SERVER['PHP_AUTH_USER'];
     $password = $_SERVER['PHP_AUTH_PW'];
