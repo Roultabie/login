@@ -87,10 +87,11 @@ class userWriter
     private static $statusCodes;
     private static $status;
 
-    function __construct()
+    function __construct($method = '', $options)
     {
-        $this->users         = $GLOBALS['config']['users'];
-        $this->sessionExpire = $GLOBALS['config']['sessionExpire'];
+        $method = $method . 'authentication';
+        (function_exists($method)) ? $this->$method($options) : $this->defaultAuthentication($options);
+        $this->sessionExpire = (is_int($this->sessionExpire)) ? $this->sessionExpire : 1800; 
         self::$statusCodes   = array(1  => 'users-not-initialized',
                                      2  => 'user-password-false',
                                      3  => 'sessionExpire-not-initialized',
@@ -222,6 +223,16 @@ class userWriter
         else {
             self::$status = false;
         }
+    }
+
+    /*
+     * Start users list methods
+     */
+    
+    private function defaultAuthentication()
+    {
+        $this->users         = $GLOBALS['config']['users'];
+        $this->sessionExpire = $GLOBALS['config']['sessionExpire'];
     }
 }
 
