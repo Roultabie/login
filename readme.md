@@ -26,7 +26,7 @@ Add your users in htpasswd file with htpasswd cli :
 **htpasswd -cd myfile myuser**  
 **htpasswd -d myfile myseconduser**  
 
-Define this constants :
+Define this constants :  
 **define('LOGIN_METHOD', 'http-basic');**  
 **define('STORAGE_METHOD', 'apacheFileBasic');**  
 **define('STORAGE_OPTIONS', 'myfile');**
