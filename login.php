@@ -236,8 +236,8 @@ class userWriter
     }
 }
 
-userWriter::initSession(STORAGE_METHOD);
-$session = new userWriter();
+userWriter::initSession();
+$session = new userWriter(STORAGE_METHOD);
 if (!empty($_SERVER['PHP_AUTH_USER']) && !empty($_SERVER['PHP_AUTH_PW'])) {
     $user     = $_SERVER['PHP_AUTH_USER'];
     $password = $_SERVER['PHP_AUTH_PW'];
