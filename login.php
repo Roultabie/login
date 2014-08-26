@@ -87,7 +87,7 @@ class userWriter
     private static $statusCodes;
     private static $status;
 
-    function __construct($method = '', $options)
+    function __construct($method = '', $options = '')
     {
         $method = $method . 'authentication';
         (function_exists($method)) ? $this->$method($options) : $this->defaultAuthentication($options);
@@ -236,22 +236,40 @@ class userWriter
     }
 }
 
-userWriter::initSession();
+userWriter::initSession(STORAGE_METHOD);
 $session = new userWriter();
-if (!empty($_POST['login']) && !empty($_POST['pass'])) {
-    $user = $_POST['login'];
-    $pass = $_POST['pass'];
+if (!empty($_SERVER['PHP_AUTH_USER']) && !empty($_SERVER['PHP_AUTH_PW'])) {
+    $user     = $_SERVER['PHP_AUTH_USER'];
+    $password = $_SERVER['PHP_AUTH_PW'];
 }
-
-$user = $session->loginCheck($user, $pass);
+if (!empty($_POST['login']) && !empty($_POST['pass'])) {
+    $user     = $_POST['login'];
+    $password = $_POST['pass'];
+}
+if (!defined('LOGIN_METHOD')) {
+    define('LOGIN_METHOD', 'post');
+}
+$user = $session->loginCheck($user, $password);
 
 if (!is_object($user)) {
     $status = userWriter::getStatus();
     userWriter::killSession();
     $statusClass   = ($status['code'] < 50) ? "error" : "success";
     $statusMessage = $status['message'];
-    $response      = (empty($_POST['CLI'])) ? require 'loginform.php' : $cli;
-    echo $response;
+    switch (LOGIN_METHOD) {
+        case 'http-basic':
+            header("WWW-Authenticate: Basic realm=\"My Realm\"");
+            header("HTTP/1.0 401 Unauthorized");
+            $message = (file_exists(HTTP_AUTHENTICATION_FILE)) ? include HTTP_AUTHENTICATION_FILE : "Authentication needed !\n";
+            echo $message;
+            break;
+        case 'post':
+            require 'loginform.php';
+            break;
+        default:
+            echo 'Authentication needed (default)!';
+            break;
+    }
     exit();
 }
 else {
@@ -263,7 +281,7 @@ else {
         exit();
     }
     $status = userWriter::getStatus();
-    if ($status['code'] === 51) {
+    if ($status['code'] === 51 && (strpos(LOGIN_METHOD, 'http') === false)) { // Si auth http, la redirection ne fonctionne, donc on l'évite
         header('Location: ' . $_SERVER['PHP_SELF']);
         exit();
     }
