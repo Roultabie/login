@@ -2,6 +2,8 @@
 
 *A simple script to create resctricted areas in your projects*
 
+_(Need php 5.5)_
+
 ##How to use out of the box:
 
 Download login and login form in your script dir, create a global config users like this :  
