@@ -1,10 +1,10 @@
-#Login
+# Login
 
 *A simple script to create resctricted areas in your projects*
 
 _(Need php 5.5)_
 
-##How to use out of the box:
+## How to use out of the box:
 
 Download login and login form in your script dir, create a global config users like this :  
 **$GLOBALS['config']['users']['john'] = array('hash' => '$2y$10$bF10DtUBK5U0VMOna.QRZODLxjG9H23fMrwfSFwyieDg.MZg10Lnm',);**  
@@ -22,7 +22,7 @@ Call login.php
 
 Login !  
 
-##How to use with http authentication and htpasswd compatibility (*nix only)
+## How to use with http authentication and htpasswd compatibility (*nix only)
 
 Add your users in htpasswd file with htpasswd cli :  
 **htpasswd -cd myfile myuser**  
@@ -37,7 +37,7 @@ And call login.php
 
 That's all !  
 
-##Licence :
+## Licence :
 
 Q.uote.me is distributed under the zlib/libpng License :
 
